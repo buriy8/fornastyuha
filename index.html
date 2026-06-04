@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>❤️ Для Настюшки ❤️</title>
     <style>
         * {
@@ -15,6 +15,7 @@
             overflow: hidden;
             font-family: 'Georgia', serif;
             height: 100vh;
+            width: 100vw;
         }
 
         /* ===== СТАРТОВЫЙ ЭКРАН ===== */
@@ -38,7 +39,6 @@
             pointer-events: none;
         }
 
-        /* Маленькие сердечки на фоне */
         .bg-heart {
             position: absolute;
             color: #ff6b9d;
@@ -67,6 +67,8 @@
             margin-bottom: 50px;
             opacity: 0.8;
             z-index: 1;
+            text-align: center;
+            padding: 0 20px;
         }
 
         @keyframes pulse {
@@ -113,24 +115,39 @@
         canvas {
             display: block;
         }
+
+        /* ===== АДАПТИВ ДЛЯ ТЕЛЕФОНОВ ===== */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 32px;
+            }
+            .title[style*="font-size: 36px"] {
+                font-size: 24px !important;
+            }
+            .subtitle {
+                font-size: 16px;
+                margin-bottom: 30px;
+            }
+            #startBtn {
+                padding: 15px 40px;
+                font-size: 18px;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <!-- СТАРТОВЫЙ ЭКРАН -->
     <div id="startScreen">
         <div class="title">💝</div>
         <div class="title" style="font-size: 36px;">Для Настюшки</div>
-        <div class="subtitle">жми</div>
-        <button id="startBtn">click</button>
+        <div class="subtitle">жми жми</div>
+        <button id="startBtn">start</button>
     </div>
 
-    <!-- ЭКРАН АНИМАЦИИ -->
     <div id="animationScreen">
         <canvas id="heartCanvas"></canvas>
     </div>
 
-    <!-- АУДИО (без controls - скрытое) -->
     <audio id="music" loop preload="auto">
         <source src="ily.mp3" type="audio/mpeg">
     </audio>
@@ -143,7 +160,6 @@
         const canvas = document.getElementById('heartCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Создаём фоновые сердечки на стартовом экране
         function createBgHearts() {
             const hearts = ['❤️', '💕', '💖', '💗', '💘', '💝'];
             for (let i = 0; i < 15; i++) {
@@ -160,7 +176,6 @@
         }
         createBgHearts();
 
-        // Размер canvas
         function resize() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
@@ -170,8 +185,12 @@
 
         let angle = 0;
         const text = "i love you";
-        const numTexts = 70;
-        const scale = 25;
+        
+        // АДАПТИВНЫЕ РАЗМЕРЫ
+        const isMobile = window.innerWidth <= 768;
+        const numTexts = isMobile ? 50 : 70;
+        const scale = isMobile ? 12 : 25;
+        const fontSize = isMobile ? '18px' : '28px';
 
         function heartX(t) {
             return 16 * Math.pow(Math.sin(t), 3);
@@ -187,7 +206,7 @@
             const centerX = canvas.width / 2;
             const centerY = canvas.height / 2.2;
 
-            ctx.font = 'bold 28px Georgia';
+            ctx.font = `bold ${fontSize} Georgia`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
 
@@ -209,17 +228,13 @@
             requestAnimationFrame(animate);
         }
 
-        // ===== ГЛАВНОЕ: КЛИК ПО КНОПКЕ =====
         startBtn.addEventListener('click', function() {
-            // Запускаем музыку
             music.play().catch(err => {
                 console.log('Музыка не загрузилась:', err);
             });
 
-            // Скрываем стартовый экран
             startScreen.classList.add('hidden');
 
-            // Показываем экран анимации
             setTimeout(() => {
                 animationScreen.classList.add('visible');
                 animate();
