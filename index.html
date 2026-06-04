@@ -113,69 +113,33 @@
         canvas {
             display: block;
         }
-
-        /* Индикатор музыки */
-        #musicInfo {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            color: #ff6b9d;
-            font-size: 14px;
-            opacity: 0;
-            transition: opacity 1s ease;
-            z-index: 100;
-        }
-        #musicInfo.show {
-            opacity: 1;
-        }
-
-        /* Кнопка управления музыкой */
-        #musicToggle {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            background: rgba(255, 107, 157, 0.2);
-            border: 1px solid #ff6b9d;
-            color: #ff6b9d;
-            padding: 8px 15px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 14px;
-            opacity: 0;
-            transition: opacity 1s ease;
-            z-index: 100;
-        }
-        #musicToggle.show {
-            opacity: 1;
-        }
-        #musicToggle:hover {
-            background: rgba(255, 107, 157, 0.4);
-        }
     </style>
 </head>
 <body>
 
     <!-- СТАРТОВЫЙ ЭКРАН -->
     <div id="startScreen">
-        <div class="title"></div>
+        <div class="title">💝</div>
         <div class="title" style="font-size: 36px;">Для Настюшки</div>
         <div class="subtitle">жми</div>
         <button id="startBtn">click</button>
     </div>
 
+    <!-- ЭКРАН АНИМАЦИИ -->
+    <div id="animationScreen">
+        <canvas id="heartCanvas"></canvas>
+    </div>
 
-    <!-- АУДИО -->
-    <audio id="music" loop controls preload="auto" style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 1000;">
-    <source src="ily.mp3" type="audio/mpeg">
-</audio>
+    <!-- АУДИО (без controls - скрытое) -->
+    <audio id="music" loop preload="auto">
+        <source src="ily.mp3" type="audio/mpeg">
+    </audio>
 
     <script>
         const startScreen = document.getElementById('startScreen');
         const animationScreen = document.getElementById('animationScreen');
         const startBtn = document.getElementById('startBtn');
         const music = document.getElementById('music');
-        const musicInfo = document.getElementById('musicInfo');
-        const musicToggle = document.getElementById('musicToggle');
         const canvas = document.getElementById('heartCanvas');
         const ctx = canvas.getContext('2d');
 
@@ -247,33 +211,19 @@
 
         // ===== ГЛАВНОЕ: КЛИК ПО КНОПКЕ =====
         startBtn.addEventListener('click', function() {
-            // 1. Запускаем музыку
-            music.play().then(() => {
-                musicInfo.classList.add('show');
-                musicToggle.classList.add('show');
-            }).catch(err => {
+            // Запускаем музыку
+            music.play().catch(err => {
                 console.log('Музыка не загрузилась:', err);
             });
 
-            // 2. Скрываем стартовый экран
+            // Скрываем стартовый экран
             startScreen.classList.add('hidden');
 
-            // 3. Показываем экран анимации
+            // Показываем экран анимации
             setTimeout(() => {
                 animationScreen.classList.add('visible');
                 animate();
             }, 500);
-        });
-
-        // Кнопка вкл/выкл музыки
-        musicToggle.addEventListener('click', function() {
-            if (music.paused) {
-                music.play();
-                musicToggle.textContent = '';
-            } else {
-                music.pause();
-                musicToggle.textContent = '';
-            }
         });
     </script>
 </body>
