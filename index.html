@@ -280,48 +280,32 @@
         window.addEventListener('resize', resize);
 
         const text = "i love you";
-        
-        // Уменьшенные размеры для телефона
         const isMobile = window.innerWidth <= 768;
-        const heartScale = isMobile ? 8 : 20; // Ещё меньше для телефона
-        const fontSize = isMobile ? '12px' : '20px';
-        const maxTexts = isMobile ? 80 : 150;
+        const scale = isMobile ? 10 : 22;
+        const fontSize = isMobile ? '11px' : '16px';
 
-        // Точки внутри сердца для заполнения
-        let heartPoints = [];
+        // Параметрические уравнения сердца
+        function heartX(t) {
+            return 16 * Math.pow(Math.sin(t), 3);
+        }
+        function heartY(t) {
+            return -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+        }
 
-        // Уравнение сердца в неявной форме
+        // Проверка: точка внутри сердца?
         function isInsideHeart(x, y) {
-            // Нормируем координаты
+            // Преобразуем в параметрические координаты
             const nx = x / 16;
-            const ny = y / 16;
-            return Math.pow(nx*nx + ny*ny - 1, 3) - nx*nx * ny*ny*ny <= 0;
+            const ny = y / 13;
+            // Используем неявное уравнение сердца
+            return Math.pow(nx*nx + ny*ny - 1, 3) - nx*nx * Math.pow(ny, 3) <= 0.5;
         }
 
-        // Генерируем точки внутри сердца
-        function generateHeartPoints() {
-            heartPoints = [];
-            const range = 16;
-            const step = 1.5;
-            
-            for (let x = -range; x <= range; x += step) {
-                for (let y = -range; y <= range; y += step) {
-                    if (isInsideHeart(x, y)) {
-                        heartPoints.push({x, y});
-                    }
-                }
-            }
-            
-            // Перемешиваем точки
-            heartPoints.sort(() => Math.random() - 0.5);
-        }
-        generateHeartPoints();
-
-        let currentTextIndex = 0;
         let placedTexts = [];
+        let angle = 0;
 
         function animate() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             const centerX = canvas.width / 2;
@@ -331,40 +315,67 @@
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
 
-            // Добавляем новые надписи внутри сердца
-            if (currentTextIndex < heartPoints.length && currentTextIndex < maxTexts) {
-                for (let i = 0; i < 3; i++) { // Добавляем по 3 за кадр
-                    if (currentTextIndex < heartPoints.length && currentTextIndex < maxTexts) {
-                        const point = heartPoints[currentTextIndex];
-                        placedTexts.push({
-                            x: point.x * heartScale + centerX,
-                            y: point.y * heartScale + centerY,
-                            opacity: 0,
-                            targetOpacity: 0.6 + Math.random() * 0.4
-                        });
-                        currentTextIndex++;
+            // Рисуем контур сердца (вращающийся)
+            const numPoints = isMobile ? 50 : 70;
+            for (let i = 0; i < numPoints; i++) {
+                const t = (i / numPoints) * Math.PI * 2 + angle;
+                const x = heartX(t) * scale + centerX;
+                const y = heartY(t) * scale + centerY;
+
+                ctx.fillStyle = 'rgba(255, 0, 0, 0.8)';
+                ctx.shadowColor = 'rgba(255, 0, 0, 0.8)';
+                ctx.shadowBlur = 10;
+                ctx.fillText(text, x, y);
+            }
+
+            // Добавляем текст ВНУТРИ сердца
+            if (placedTexts.length < 100) {
+                for (let attempt = 0; attempt < 20; attempt++) {
+                    // Генерируем случайную точку в bounding box сердца
+                    const rx = (Math.random() - 0.5) * 32 * scale;
+                    const ry = (Math.random() - 0.5) * 26 * scale;
+                    
+                    // Проверяем внутри ли
+                    if (isInsideHeart(rx / scale, ry / scale)) {
+                        // Проверяем расстояние до других точек
+                        let tooClose = false;
+                        for (let pt of placedTexts) {
+                            const dx = rx - (pt.x - centerX);
+                            const dy = ry - (pt.y - centerY);
+                            const dist = Math.sqrt(dx*dx + dy*dy);
+                            if (dist < (isMobile ? 25 : 35)) {
+                                tooClose = true;
+                                break;
+                            }
+                        }
+                        
+                        if (!tooClose) {
+                            placedTexts.push({
+                                x: rx + centerX,
+                                y: ry + centerY,
+                                opacity: 0,
+                                targetOpacity: 0.4 + Math.random() * 0.3
+                            });
+                            break;
+                        }
                     }
                 }
             }
 
-            // Рисуем все надписи
-            placedTexts.forEach((pt, index) => {
-                // Плавное появление
+            // Рисуем все точки внутри
+            placedTexts.forEach((pt) => {
                 if (pt.opacity < pt.targetOpacity) {
-                    pt.opacity += 0.02;
+                    pt.opacity += 0.01;
                 }
                 
-                // Лёгкое мерцание
-                const flicker = 0.9 + Math.sin(Date.now() * 0.001 + index) * 0.1;
-                const finalOpacity = pt.opacity * flicker;
-
-                ctx.fillStyle = `rgba(255, 0, 0, ${finalOpacity})`;
-                ctx.shadowColor = `rgba(255, 0, 0, 0.5)`;
-                ctx.shadowBlur = 8;
+                const flicker = 0.95 + Math.sin(Date.now() * 0.002 + pt.x) * 0.05;
+                ctx.fillStyle = `rgba(255, 0, 0, ${pt.opacity * flicker})`;
+                ctx.shadowBlur = 5;
                 ctx.fillText(text, pt.x, pt.y);
             });
 
             ctx.shadowBlur = 0;
+            angle += 0.003;
             requestAnimationFrame(animate);
         }
 
