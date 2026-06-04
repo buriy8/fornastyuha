@@ -157,10 +157,10 @@
 
     <!-- СТАРТОВЫЙ ЭКРАН -->
     <div id="startScreen">
-        <div class="title">💝</div>
+        <div class="title"></div>
         <div class="title" style="font-size: 36px;">Для Настюшки</div>
-        <div class="subtitle">жми...</div>
-        <button id="startBtn">click ❤️</button>
+        <div class="subtitle">жми</div>
+        <button id="startBtn">click</button>
     </div>
 
 
@@ -221,7 +221,7 @@
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
+            const centerY = canvas.height / 2.2;
 
             ctx.font = 'bold 28px Georgia';
             ctx.textAlign = 'center';
@@ -241,7 +241,7 @@
             }
 
             ctx.shadowBlur = 0;
-            angle += 0.005;
+            angle += 0.004;
             requestAnimationFrame(animate);
         }
 
@@ -269,10 +269,10 @@
         musicToggle.addEventListener('click', function() {
             if (music.paused) {
                 music.play();
-                musicToggle.textContent = '🔊 Музыка';
+                musicToggle.textContent = '';
             } else {
                 music.pause();
-                musicToggle.textContent = ' Музыка';
+                musicToggle.textContent = '';
             }
         });
     </script>
